@@ -1,0 +1,17 @@
+html, body, #app{
+    height: 100%;
+    background-color: plum;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+}
+.el-breadcrumb{
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+.el-card{
+    margin-bottom: 20px;
+}
+.el-pagination{
+    margin: 15px 0 0 30px;
+}
