@@ -48,10 +48,20 @@
             ></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
-            <el-button type="danger" icon="el-icon-delete" circle @click="ShowMessage(slotProps.row.id)"></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              circle
+              @click="ShowMessage(slotProps.row.id)"
+            ></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top-start">
-            <el-button type="warning" icon="el-icon-setting" circle></el-button>
+            <el-button
+              type="warning"
+              icon="el-icon-setting"
+              circle
+              @click="showRoleDialog(slotProps.row)"
+            ></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -175,6 +185,27 @@
         <el-button type="primary" @click="editsubmit">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 分配角色对话框 -->
+    <el-dialog title="提示" :visible.sync="RoleDialog" width="50%"
+    @close="clearInfo">
+      <div>
+        <p>当前用户：{{userInfo.username}}</p>
+        <p>当前角色：{{userInfo.role_name}}</p>
+      </div>
+      分配角色：
+ <el-select v-model="selRoleID" placeholder="请选择">
+    <el-option
+      v-for="item in roleslist"
+      :key="item.id"
+      :label="item.roleName"
+      :value="item.id">
+    </el-option>
+  </el-select>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="RoleDialog = false">取 消</el-button>
+        <el-button type="primary" @click="submitRole">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -242,7 +273,12 @@ export default {
         email: [{ validator: validateEmail, trigger: "blur", required: true }],
         mobile: [{ validator: validateMobile, trigger: "blur", required: true }]
       },
-      editForm: {}
+      editForm: {},
+      RoleDialog: false,
+      // 当前分配角色的信息
+      userInfo: {},
+      roleslist: [],
+      selRoleID:''
     };
   },
   created() {
@@ -353,31 +389,61 @@ export default {
         }
       });
     },
-    ShowMessage(id){
+    ShowMessage(id) {
       console.log(id);
-      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(async () => {
+      this.$confirm("此操作将永久删除该用户, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
           const { data: res } = await this.$http.delete("users/" + id);
-           if (res.meta.status !== 200) {
+          if (res.meta.status !== 200) {
             return this.$message.error("删除用户失败");
           } else {
             this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
+              type: "success",
+              message: "删除成功!"
+            });
             this.getUserList();
           }
-         
-        }).catch(() => {
+        })
+        .catch(() => {
           this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });          
+            type: "info",
+            message: "已取消删除"
+          });
         });
-  
+    },
+    // 分配角色
+    async showRoleDialog(userInfo) {
+      this.userInfo = userInfo;
+      const { data: res } = await this.$http.get("roles");
+      if (res.meta.status !== 200) {
+        return this.$message.error("获取角色列表失败");
+      }
+      this.roleslist = res.data;
+      this.RoleDialog = true;
+    },
+    // 提交
+   async submitRole(){
+      if(!this.selRoleID){
+        return this.$message.error('请选择要分配的角色！')
+      
+      }
+      const {data:res} = await this.$http.put(`users/${this.userInfo.id}/role`,{
+        rid:this.selRoleID
+      })
+      if(res.meta.status !== 200){
+        return this.$message.error('分配的角色失败！')
+      }
+      this.$message.success('分配成功')
+      this.RoleDialog = false
+      this.getUserList()
+    },
+    clearInfo(){
+      this.selRoleID = '';
+      this.userInfo = {}
     }
   }
 };

@@ -3,10 +3,12 @@ import Router from 'vue-router'
 import VueRouter from 'vue-router'
 
 // const articlelist = () => import('@/view/articleList/articleList')
-const articlecreate = () => import('@/view/articleList/articleCreate')
+// const articlecreate = () => import('@/view/articleList/articleCreate')
 const login = () => import('@/view/login/login')
 const home = () => import('@/view/home/home')
 const user =()=>import('@/view/user/user')
+const rights =()=>import('@/view/Rights/right')
+const roles =()=>import('@/view/Rights/Roles')
 Vue.use(Router)
 
 const routes = [
@@ -28,8 +30,12 @@ const routes = [
     
       },
       {
-        path: '/articlelist/create',
-        component: articlecreate
+        path: '/rights',
+        component: rights
+      },
+      {
+        path: '/roles',
+        component: roles
       }
     ]
   },
